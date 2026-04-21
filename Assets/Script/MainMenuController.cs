@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.IO;
 
+// Draws the main menu and high score panel using IMGUI.
 public class MainMenuController : MonoBehaviour
 {
     public static MainMenuController Instance { get; private set; }
@@ -25,6 +26,7 @@ public class MainMenuController : MonoBehaviour
 
     private void Awake()
     {
+        // Keep a single active menu controller so other systems can query menu state safely.
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -39,6 +41,7 @@ public class MainMenuController : MonoBehaviour
 
     public void OpenMenu()
     {
+        // Reopen the menu and pause gameplay time.
         showHighScores = false;
         IsMenuOpen = true;
         Time.timeScale = 0f;
@@ -46,6 +49,7 @@ public class MainMenuController : MonoBehaviour
 
     private void CloseMenu()
     {
+        // Save the entered name before handing control back to gameplay.
         RegisterPlayerName();
         showHighScores = false;
         IsMenuOpen = false;
@@ -135,6 +139,7 @@ public class MainMenuController : MonoBehaviour
 
         if (showHighScores)
         {
+            // Load the saved player names and scores into the High Scores panel.
             string[] highScoreLines = ScoreSaveSystem.GetRecentScoreLines(5);
             Rect scorePanel = new Rect(menuRect.x + menuRect.width + 24f, menuRect.y + 70f, 220f, 150f);
             GUI.color = new Color(1f, 1f, 1f, 0.88f);
@@ -152,6 +157,7 @@ public class MainMenuController : MonoBehaviour
 
     private void EnsureStyles()
     {
+        // Lazily build textures/styles so they are created only when the menu is actually drawn.
         if (landingPageTexture == null)
         {
             string pngPath = Path.Combine(Application.dataPath, "Texture", "landingPage.png");
@@ -219,6 +225,7 @@ public class MainMenuController : MonoBehaviour
 
     private static Texture2D CreateColorTexture(Color color)
     {
+        // Small helper texture used as a flat background for IMGUI controls.
         Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
         texture.SetPixel(0, 0, color);
         texture.Apply();
@@ -227,6 +234,7 @@ public class MainMenuController : MonoBehaviour
 
     private void RegisterPlayerName()
     {
+        // Save the player name so the score file can store it with each result.
         CurrentPlayerName = string.IsNullOrWhiteSpace(playerName) ? "Player" : playerName.Trim();
         PlayerPrefs.SetString("PurlyPlayerName", CurrentPlayerName);
         PlayerPrefs.Save();

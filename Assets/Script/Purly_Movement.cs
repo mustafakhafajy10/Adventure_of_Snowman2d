@@ -2,6 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(PurlyMovementModel))]
+// Applies the movement model to the Rigidbody2D while preventing movement through colliders.
 public class PurlyMovement : MonoBehaviour
 {
     private Rigidbody2D rb;
@@ -14,6 +15,7 @@ public class PurlyMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         movementModel = GetComponent<PurlyMovementModel>();
+        // Rotate only the visible middle body piece, not the whole root object.
         rotatingChild = transform.Find(movementModel.RotatingChildName);
 
         if (rb != null)
@@ -26,6 +28,7 @@ public class PurlyMovement : MonoBehaviour
         {
             useTriggers = false
         };
+        // Match the collision matrix of Purly's layer when checking future movement.
         movementContactFilter.SetLayerMask(Physics2D.GetLayerCollisionMask(gameObject.layer));
     }
 
@@ -53,6 +56,7 @@ public class PurlyMovement : MonoBehaviour
         }
 
         Vector2 direction = movementDelta / distance;
+        // Cast ahead before moving so Purly stops just short of the obstacle instead of clipping into it.
         int hitCount = rb.Cast(direction, movementContactFilter, movementHits, distance + collisionBuffer);
         if (hitCount == 0)
         {

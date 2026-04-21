@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+// Provides a simple pause/resume/restart overlay using IMGUI buttons.
 public class PauseMenuController : MonoBehaviour
 {
     [SerializeField] private Texture2D pauseButtonTexture;
@@ -15,24 +16,28 @@ public class PauseMenuController : MonoBehaviour
 
     public void Pause()
     {
+        // Stop gameplay time and show the pause state.
         Time.timeScale = 0f;
         isPaused = true;
     }
 
     public void Resume()
     {
+        // Resume normal gameplay time.
         isPaused = false;
         Time.timeScale = 1f;
     }
 
     public void Restart()
     {
+        // Reload the current scene to restart the level.
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void OnGUI()
     {
+        // Do not draw pause controls while the main menu is covering the screen.
         if (MainMenuController.Instance != null && MainMenuController.Instance.IsMenuOpen)
         {
             return;
@@ -72,6 +77,7 @@ public class PauseMenuController : MonoBehaviour
 
     private void DrawIconButton(Rect rect, Texture2D texture, System.Action onClick)
     {
+        // Fall back to text buttons if icon textures were not assigned in the inspector.
         if (texture == null)
         {
             if (GUI.Button(rect, rect.y == buttonStart.y && !isPaused ? "Pause" : "Resume"))

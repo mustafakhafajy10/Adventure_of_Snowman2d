@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
+// Alternates two snow guns so they fire snowballs into the arena one after the other.
 public class SnowGunShooter : MonoBehaviour
 {
     [SerializeField] private float spawnInterval = 20f;
@@ -19,6 +20,7 @@ public class SnowGunShooter : MonoBehaviour
 
     private void Awake()
     {
+        // Initialize the shared firing cycle once so all gun instances stay in sync.
         if (!cycleInitialized)
         {
             nextGunOrderToFire = 0;
@@ -35,6 +37,7 @@ public class SnowGunShooter : MonoBehaviour
     {
         while (true)
         {
+            // Wait until this gun's turn in the alternating fire sequence.
             yield return new WaitUntil(() => gunOrder == nextGunOrderToFire);
             yield return new WaitForSeconds(spawnInterval);
             SpawnSnowball();
@@ -55,6 +58,7 @@ public class SnowGunShooter : MonoBehaviour
         spriteRenderer.sortingOrder = 6;
 
         CircleCollider2D circleCollider = snowball.AddComponent<CircleCollider2D>();
+        // Trigger collision is enough; the projectile should not physically bounce off Purly.
         circleCollider.radius = snowballRadius;
         circleCollider.isTrigger = true;
 
@@ -71,6 +75,7 @@ public class SnowGunShooter : MonoBehaviour
     private Vector2 GetShootDirection()
     {
         float targetX = gunOrder == 0 ? -47.46f : -63.94f;
+        // Shoot toward a random point on the opposite side of the arena.
         Vector2 targetPoint = new Vector2(targetX, Random.Range(targetMinY, targetMaxY));
         return (targetPoint - (Vector2)transform.position).normalized;
     }
@@ -83,6 +88,7 @@ public class SnowGunShooter : MonoBehaviour
         }
 
         const int size = 64;
+        // Build a simple white circle in code so the shooter does not depend on a separate sprite asset.
         Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
         texture.filterMode = FilterMode.Bilinear;
 
@@ -104,12 +110,14 @@ public class SnowGunShooter : MonoBehaviour
     }
 }
 
+// Moves with its Rigidbody2D and destroys Purly on contact.
 public class SnowballProjectile : MonoBehaviour
 {
     private float lifetime;
 
     public void Initialize(float newLifetime)
     {
+        // Self-destruct later so missed shots do not accumulate forever.
         lifetime = newLifetime;
         Destroy(gameObject, lifetime);
     }
@@ -129,6 +137,7 @@ public class SnowballProjectile : MonoBehaviour
     {
         if (purly != null)
         {
+            // Save the score before the player object is destroyed.
             ScoreManager.Instance?.SaveScoreForCurrentPlayer();
             Destroy(purly.gameObject);
         }

@@ -1,18 +1,13 @@
 using System.Collections;
 using UnityEngine;
 
+// Keeps one balloon active on each wall and respawns popped balloons after a delay.
 public class BalloonWallSpawner : MonoBehaviour
 {
     [SerializeField] private float respawnDelay = 2f;
     [SerializeField] private float balloonScale = 0.1f;
     [SerializeField] private float popDistance = 1.2f;
-    [SerializeField] private Vector2[] spawnPositions =
-    {
-        new Vector2(-61.6f, -36f),
-        new Vector2(-49.89f, -35.79f),
-        new Vector2(-55.44f, -32.94f),
-        new Vector2(-55.4f, -37.94f)
-    };
+    [SerializeField] private int wallCount = 4;
 
     private Sprite balloonSprite;
     private Material balloonMaterial;
@@ -20,6 +15,7 @@ public class BalloonWallSpawner : MonoBehaviour
 
     private void Start()
     {
+        // Reuse the look of any existing balloon in the scene, then rebuild the wall set from scratch.
         CacheBalloonVisuals();
         ClearExistingBalloons();
         SpawnInitialBalloons();
@@ -27,11 +23,12 @@ public class BalloonWallSpawner : MonoBehaviour
 
     public void HandleBalloonPopped(int wallIndex)
     {
-        if (wallIndex < 0 || wallIndex >= spawnPositions.Length || respawnQueued[wallIndex])
+        if (wallIndex < 0 || wallIndex >= wallCount || respawnQueued[wallIndex])
         {
             return;
         }
 
+        // Start the 2-second wait before replacing the balloon on this wall.
         StartCoroutine(RespawnBalloonAfterDelay(wallIndex));
     }
 
@@ -39,12 +36,14 @@ public class BalloonWallSpawner : MonoBehaviour
     {
         respawnQueued[wallIndex] = true;
         yield return new WaitForSeconds(respawnDelay);
+        // After the delay, spawn a new balloon back on the same wall.
         SpawnBalloonOnWall(wallIndex);
         respawnQueued[wallIndex] = false;
     }
 
     private void CacheBalloonVisuals()
     {
+        // Grab the sprite/material once so newly spawned balloons match the original art setup.
         SpriteRenderer existingBalloonRenderer = FindFirstObjectByType<SpriteRenderer>();
         BalloonPop existingBalloon = FindFirstObjectByType<BalloonPop>();
 
@@ -62,6 +61,7 @@ public class BalloonWallSpawner : MonoBehaviour
 
     private void ClearExistingBalloons()
     {
+        // Remove any hand-placed balloons so the spawner becomes the single source of truth.
         BalloonPop[] balloons = FindObjectsByType<BalloonPop>(FindObjectsSortMode.None);
         foreach (BalloonPop balloon in balloons)
         {
@@ -75,9 +75,10 @@ public class BalloonWallSpawner : MonoBehaviour
 
     private void SpawnInitialBalloons()
     {
-        respawnQueued = new bool[spawnPositions.Length];
+        // Track which wall slots already have a respawn timer running.
+        respawnQueued = new bool[wallCount];
 
-        for (int i = 0; i < spawnPositions.Length; i++)
+        for (int i = 0; i < wallCount; i++)
         {
             SpawnBalloonOnWall(i);
         }
@@ -85,13 +86,14 @@ public class BalloonWallSpawner : MonoBehaviour
 
     private void SpawnBalloonOnWall(int wallIndex)
     {
-        if (balloonSprite == null || wallIndex < 0 || wallIndex >= spawnPositions.Length)
+        if (balloonSprite == null || wallIndex < 0 || wallIndex >= wallCount)
         {
             return;
         }
 
         GameObject balloon = new GameObject($"Balloon_{wallIndex}");
-        balloon.transform.position = spawnPositions[wallIndex];
+        // Use a different random point each time the balloon respawns.
+        balloon.transform.position = BalloonPop.GetRandomPositionOnWall(wallIndex);
         balloon.transform.localScale = Vector3.one * balloonScale;
 
         SpriteRenderer spriteRenderer = balloon.AddComponent<SpriteRenderer>();
@@ -100,6 +102,7 @@ public class BalloonWallSpawner : MonoBehaviour
         spriteRenderer.sortingOrder = 5;
 
         CircleCollider2D circleCollider = balloon.AddComponent<CircleCollider2D>();
+        // Trigger-only so the player can overlap the balloon without being blocked by it.
         circleCollider.isTrigger = true;
         circleCollider.radius = 5f;
 

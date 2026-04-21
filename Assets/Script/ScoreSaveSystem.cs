@@ -4,6 +4,7 @@ using System.IO;
 using UnityEngine;
 
 [Serializable]
+// One saved score line in the JSON file.
 public class ScoreEntry
 {
     public string playerName;
@@ -12,17 +13,20 @@ public class ScoreEntry
 }
 
 [Serializable]
+// Wrapper class because JsonUtility cannot serialize a bare top-level list.
 public class ScoreEntryCollection
 {
     public List<ScoreEntry> entries = new List<ScoreEntry>();
 }
 
+// Handles reading and writing the persistent score history file.
 public static class ScoreSaveSystem
 {
     private const string FileName = "purly_scores.json";
 
     public static void AddScore(string playerName, int score)
     {
+        // Append a new score entry with a timestamp, then write the file back out.
         ScoreEntryCollection collection = LoadCollection();
         collection.entries.Add(new ScoreEntry
         {
@@ -43,6 +47,7 @@ public static class ScoreSaveSystem
         }
 
         List<ScoreEntry> sortedEntries = new List<ScoreEntry>(collection.entries);
+        // Sort high scores from highest to lowest before displaying them.
         sortedEntries.Sort((left, right) =>
         {
             int scoreComparison = right.score.CompareTo(left.score);
@@ -79,6 +84,7 @@ public static class ScoreSaveSystem
         }
 
         ScoreEntryCollection collection = JsonUtility.FromJson<ScoreEntryCollection>(json);
+        // Fall back to an empty collection if the file could not be parsed.
         return collection ?? new ScoreEntryCollection();
     }
 
@@ -90,6 +96,7 @@ public static class ScoreSaveSystem
 
     private static string GetFilePath()
     {
+        // PersistentDataPath keeps the score file outside the project assets and survives play sessions.
         return Path.Combine(Application.persistentDataPath, FileName);
     }
 }

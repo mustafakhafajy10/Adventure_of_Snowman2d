@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Stores movement tuning values and the latest player input in one shared place.
 public class PurlyMovementModel : MonoBehaviour
 {
     [SerializeField] private float speed = 5f;
@@ -16,11 +17,13 @@ public class PurlyMovementModel : MonoBehaviour
 
     public void SetMoveInput(Vector2 input)
     {
+        // Clamp diagonals to avoid moving faster on two keys at once.
         MoveInput = input.sqrMagnitude > 1f ? input.normalized : input;
     }
 
     public void SetRotationInput(float input)
     {
+        // Rotation is treated as a -1..1 axis.
         RotationInput = Mathf.Clamp(input, -1f, 1f);
     }
 }

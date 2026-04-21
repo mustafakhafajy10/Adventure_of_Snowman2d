@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PurlyMovementModel))]
+// Converts input actions into normalized movement/rotation values for the movement model.
 public class PurlyInputController : MonoBehaviour
 {
     [SerializeField] private InputActionAsset inputActions;
@@ -20,12 +21,14 @@ public class PurlyInputController : MonoBehaviour
 
         if (inputActions != null)
         {
+            // Use the authored input asset when one is assigned.
             actionMap = inputActions.FindActionMap(actionMapName, true);
             moveAction = actionMap.FindAction(moveActionName, true);
             rotateAction = actionMap.FindAction(rotateActionName, true);
         }
         else
         {
+            // Build keyboard bindings in code so the controller still works without an asset.
             CreateFallbackActions();
         }
     }
@@ -78,6 +81,7 @@ public class PurlyInputController : MonoBehaviour
             .With("Right", "<Keyboard>/rightArrow");
 
         rotateAction = actionMap.AddAction(rotateActionName, InputActionType.Value);
+        // Q/E rotate Purly in place.
         rotateAction.AddCompositeBinding("1DAxis")
             .With("Negative", "<Keyboard>/e")
             .With("Positive", "<Keyboard>/q");

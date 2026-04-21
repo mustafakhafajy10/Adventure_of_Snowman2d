@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Tracks the current run score and draws it in the corner during gameplay.
 public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance { get; private set; }
@@ -27,6 +28,7 @@ public class ScoreManager : MonoBehaviour
 
     public void IncrementScore()
     {
+        // Each balloon pop gives 1 point.
         score += 1;
     }
 
@@ -42,6 +44,7 @@ public class ScoreManager : MonoBehaviour
             return;
         }
 
+        // Save this result once when the run ends.
         ScoreSaveSystem.AddScore(MainMenuController.CurrentPlayerName, score);
         scoreSaved = true;
     }
